@@ -15,7 +15,7 @@ import { SUBJECT_EMOJI, TAG_EMOJI } from "@/components/vault/meta";
 
 export const Route = createFileRoute("/mock-paper")({
   validateSearch: (s: Record<string, unknown>): { set?: string } =>
-    typeof s.set === "string" ? { set: s.set } : {},
+    typeof s["set"] === "string" ? { set: s["set"] } : {},
   head: () => ({
     meta: [
       { title: "Mock Paper - PaperVault" },

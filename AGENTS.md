@@ -33,3 +33,5 @@ use the editor.
 - Practice/pin/filter rules live as pure functions in `src/lib/vault.ts` (tested in `vault.test.ts`); UI only calls them — keeps rules testable and consistent.
 - Progress persists in browser localStorage via `src/hooks/use-vault.ts`, read in an effect — app is browser-only with no backend by requirement.
 - Question data is fixed in `src/data/questions.ts`; never generate or append questions.
+- Mock paper selection lives in `src/lib/mock-paper.ts` (tested); the paper is encoded in the `/mock-paper?set=` link so print/shuffle/back stay stateless.
+- `use-vault` writes storage only after the saved state is read (`ready` flag) — otherwise a remount overwrites progress with empty state.
