@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { QUESTIONS } from "@/data/questions";
 import {
   clearAllAfterPractice,
+  dailyCount,
+  levelFor,
   emptyFilters,
   filterQuestions,
   initialVaultState,
@@ -54,5 +56,35 @@ describe("PaperVault rules", () => {
   it("filters return no questions instead of inventing any", () => {
     expect(filterQuestions(QUESTIONS, { ...emptyFilters, search: "quantum" })).toEqual([]);
     expect(filterQuestions(QUESTIONS, { ...emptyFilters, subject: "Heat Transfer", year: "2022" }).map((q) => q.id)).toEqual([11, 39, 42]);
+  });
+});
+
+describe("PaperVault gamification", () => {
+  it("levels: 0-50 XP Beginner, 51-150 Pro, 151+ Master", () => {
+    expect(levelFor(0)).toBe("Beginner");
+    expect(levelFor(50)).toBe("Beginner");
+    expect(levelFor(60)).toBe("Pro");
+    expect(levelFor(150)).toBe("Pro");
+    expect(levelFor(160)).toBe("Master");
+  });
+
+  it("daily goal counts questions practised today and drops unmarked ones", () => {
+    let s = togglePractised(initialVaultState, 1);
+    s = togglePractised(s, 2);
+    expect(dailyCount(s)).toBe(2);
+    expect(dailyCount(togglePractised(s, 2))).toBe(1);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    expect(dailyCount(s, tomorrow)).toBe(0);
+  });
+
+  it("every filter option together covers all 50 questions", () => {
+    const sum = (key: keyof typeof emptyFilters, values: string[]) =>
+      values.reduce((n, v) => n + filterQuestions(QUESTIONS, { ...emptyFilters, [key]: v }).length, 0);
+    expect(filterQuestions(QUESTIONS, emptyFilters)).toHaveLength(50);
+    expect(sum("subject", ["Thermodynamics", "Fluid Mechanics", "Machine Design", "Manufacturing", "Strength of Materials", "Heat Transfer"])).toBe(50);
+    expect(sum("semester", ["Sem 3", "Sem 4", "Sem 5"])).toBe(50);
+    expect(sum("year", ["2022", "2023", "2024"])).toBe(50);
+    expect(sum("tag", ["Most Repeated", "Conceptual", "Drawing"])).toBe(50);
   });
 });
