@@ -22,7 +22,8 @@ const VALID = new Set(QUESTIONS.map((q) => q.id));
 export function useVault() {
   const [state, setState] = useState<VaultState>(initialVaultState);
   const ref = useRef(state);
-  const loaded = useRef(false);
+  // Only write after the saved progress has been read, so a remount never overwrites it with empty state.
+  const [ready, setReady] = useState(false);
 
   const commit = useCallback((next: VaultState) => {
     ref.current = next;
@@ -36,17 +37,17 @@ export function useVault() {
     } catch {
       /* ignore corrupt storage */
     }
-    loaded.current = true;
+    setReady(true);
   }, [commit]);
 
   useEffect(() => {
-    if (!loaded.current) return;
+    if (!ready) return;
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
     } catch {
       /* storage full or blocked */
     }
-  }, [state]);
+  }, [state, ready]);
 
   /** `practised`: question became practised (false = unmarked). `quest`: Daily Quest just completed. */
   const toggle = useCallback(
