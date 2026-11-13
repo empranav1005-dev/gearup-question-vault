@@ -4,6 +4,7 @@ import type { Question } from "@/data/questions";
 import { MAX_PINNED } from "@/lib/vault";
 import { cn } from "@/lib/utils";
 import { DIFFICULTY_CLASS, SUBJECT_EMOJI } from "./meta";
+import { BounceButton } from "./BounceButton";
 
 interface Props {
   items: Question[];
@@ -69,19 +70,19 @@ export function RevisePanel({ items, onPractise, onRemove, onClearAll }: Props) 
                   </span>
                 </div>
                 <div className="mt-3 flex gap-2">
-                  <button
+                  <BounceButton
                     onClick={() => onPractise(q.id)}
-                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-success px-2 py-1.5 text-[11px] font-bold text-success-foreground hover:brightness-110 active:scale-95"
+                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg bg-success px-2 py-1.5 text-[11px] font-bold text-success-foreground active:scale-95"
                   >
                     <Check className="h-3.5 w-3.5" /> Mark as Practised & Clear
-                  </button>
-                  <button
+                  </BounceButton>
+                  <BounceButton
                     onClick={() => onRemove(q.id)}
                     aria-label={`Remove Q${q.id} from Revise Next`}
                     className="inline-flex items-center gap-1 rounded-lg border border-glass-border px-2 py-1.5 text-[11px] font-bold text-muted-foreground hover:border-destructive/50 hover:text-destructive"
                   >
                     Remove <X className="h-3.5 w-3.5" />
-                  </button>
+                  </BounceButton>
                 </div>
               </div>
             ))
@@ -89,13 +90,13 @@ export function RevisePanel({ items, onPractise, onRemove, onClearAll }: Props) 
         </div>
 
         <div className="border-t border-glass-border p-4">
-          <button
+          <BounceButton
             onClick={onClearAll}
             disabled={items.length === 0}
             className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground transition-all glow-primary hover:brightness-110 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
           >
-            ✅ Clear All After Practice
-          </button>
+            ✅ Clear All After Practice 🏆
+          </BounceButton>
         </div>
       </div>
     </div>
