@@ -9,6 +9,9 @@ import {
   togglePractised,
   unpin as unpinFn,
   markPractised,
+  questDoneToday,
+  react as reactFn,
+  type Reaction,
   type VaultState,
 } from "@/lib/vault";
 
@@ -45,16 +48,21 @@ export function useVault() {
     }
   }, [state]);
 
-  /** Returns true when the question became practised (false when unmarked). */
+  /** `practised`: question became practised (false = unmarked). `quest`: Daily Quest just completed. */
   const toggle = useCallback(
     (id: number) => {
       const prev = ref.current;
       const next = togglePractised(prev, id);
       commit(next);
-      return next.practised.length > prev.practised.length;
+      return {
+        practised: next.practised.length > prev.practised.length,
+        quest: !questDoneToday(prev) && questDoneToday(next),
+      };
     },
     [commit],
   );
+
+  const react = useCallback((id: number, kind: Reaction) => commit(reactFn(ref.current, id, kind)), [commit]);
 
   const pin = useCallback(
     (id: number) => {
@@ -69,22 +77,24 @@ export function useVault() {
 
   const unpin = useCallback((id: number) => commit(unpinFn(ref.current, id)), [commit]);
 
-  /** Returns true when this emptied the Revise Next queue. */
+  /** `emptied`: this cleared the whole Revise Next queue. */
   const practiseAndClear = useCallback(
     (id: number) => {
-      const next = markPractised(ref.current, [id]);
+      const prev = ref.current;
+      const next = markPractised(prev, [id]);
       commit(next);
-      return next.pinned.length === 0;
+      return { emptied: next.pinned.length === 0, quest: !questDoneToday(prev) && questDoneToday(next) };
     },
     [commit],
   );
 
-  /** Returns how many pinned questions were practised and cleared. */
+  /** `count`: how many pinned questions were practised and cleared. */
   const clearAll = useCallback(() => {
-    const count = ref.current.pinned.length;
-    commit(clearAllAfterPractice(ref.current));
-    return count;
+    const prev = ref.current;
+    const next = clearAllAfterPractice(prev);
+    commit(next);
+    return { count: prev.pinned.length, quest: !questDoneToday(prev) && questDoneToday(next) };
   }, [commit]);
 
-  return { state, toggle, pin, unpin, practiseAndClear, clearAll };
+  return { state, toggle, pin, unpin, practiseAndClear, clearAll, react };
 }
