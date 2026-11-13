@@ -172,15 +172,17 @@ function Index() {
 
       <div className="mx-auto max-w-7xl space-y-5 px-4 pt-5 sm:px-6">
         <DailyQuest hard={hardToday(state)} done={questDoneToday(state)} />
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
           <DailyMotivation />
-          <TimerChallenge
-            challenge={challenge}
-            onStart={() => setChallenge({ endsAt: Date.now() + CHALLENGE_MS, done: 0 })}
-            onCancel={() => setChallenge(null)}
-            onTimeout={handleTimeout}
-          />
-          <SpinWheel onPick={goToQuestion} />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+            <TimerChallenge
+              challenge={challenge}
+              onStart={() => setChallenge({ endsAt: Date.now() + CHALLENGE_MS, done: 0 })}
+              onCancel={() => setChallenge(null)}
+              onTimeout={handleTimeout}
+            />
+            <SpinWheel onPick={goToQuestion} />
+          </div>
         </div>
         <Mentors />
       </div>

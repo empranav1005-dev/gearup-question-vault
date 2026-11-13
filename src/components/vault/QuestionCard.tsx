@@ -46,7 +46,7 @@ export function QuestionCard(p: Props) {
         onClick={p.onOpen}
         className={cn(
           "cream-card group relative h-full cursor-pointer rounded-2xl p-4 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl sm:p-5",
-          practised && "border-success bg-mint ring-2 ring-success/60",
+          practised && "border-success bg-mint! ring-2 ring-success/60",
           pinned && !practised && "ring-2 ring-primary/70",
           p.celebrate && "animate-card-pop",
           p.highlighted && "animate-highlight ring-4 ring-warning",
