@@ -3,6 +3,11 @@ import { QUESTIONS } from "@/data/questions";
 import {
   clearAllAfterPractice,
   dailyCount,
+  hardToday,
+  questDoneToday,
+  radarStatus,
+  react,
+  subjectRadar,
   levelFor,
   emptyFilters,
   filterQuestions,
@@ -86,5 +91,46 @@ describe("PaperVault gamification", () => {
     expect(sum("semester", ["Sem 3", "Sem 4", "Sem 5"])).toBe(50);
     expect(sum("year", ["2022", "2023", "2024"])).toBe(50);
     expect(sum("tag", ["Most Repeated", "Conceptual", "Drawing"])).toBe(50);
+  });
+});
+
+describe("PaperVault motivation rules", () => {
+  const HARD = [1, 9, 11, 25, 35];
+
+  it("Daily Quest: 5 Hard questions today gives +50 bonus XP once", () => {
+    let s = initialVaultState;
+    for (const id of HARD.slice(0, 4)) s = togglePractised(s, id);
+    expect(hardToday(s)).toBe(4);
+    expect(xp(s)).toBe(40);
+    s = togglePractised(s, HARD[4]!);
+    expect(questDoneToday(s)).toBe(true);
+    expect(xp(s)).toBe(100);
+    s = togglePractised(s, 36); // a 6th hard one: no second bonus
+    expect(xp(s)).toBe(110);
+  });
+
+  it("Daily Quest bonus is taken back if a Hard question is unmarked below 5", () => {
+    let s = initialVaultState;
+    for (const id of HARD) s = togglePractised(s, id);
+    s = togglePractised(s, HARD[0]!);
+    expect(questDoneToday(s)).toBe(false);
+    expect(xp(s)).toBe(40);
+  });
+
+  it("radar colours: below 30% weak, 30-70% okay, above 70% strong", () => {
+    expect(radarStatus(29)).toBe("weak");
+    expect(radarStatus(30)).toBe("okay");
+    expect(radarStatus(70)).toBe("okay");
+    expect(radarStatus(71)).toBe("strong");
+    const rows = subjectRadar(QUESTIONS, [8, 9]);
+    expect(rows.find((r) => r.subject === "Thermodynamics")).toMatchObject({ done: 2, total: 7 });
+    expect(rows.reduce((n, r) => n + r.total, 0)).toBe(50);
+  });
+
+  it("emoji reactions add up per question", () => {
+    let s = react(initialVaultState, 4, "easy");
+    s = react(s, 4, "easy");
+    s = react(s, 4, "confusing");
+    expect(s.reactions[4]).toEqual({ easy: 2, hard: 0, confusing: 1 });
   });
 });
