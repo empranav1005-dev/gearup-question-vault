@@ -13,8 +13,8 @@ import {
 describe("PaperVault rules", () => {
   it("ships exactly the 50 fixed questions", () => {
     expect(QUESTIONS).toHaveLength(50);
-    expect(QUESTIONS[0].title).toBe("Explain Iron-Carbon Diagram");
-    expect(QUESTIONS[49].title).toBe("Explain LMTD Method for Heat Exchanger");
+    expect(QUESTIONS[0]!.title).toBe("Explain Iron-Carbon Diagram");
+    expect(QUESTIONS[49]!.title).toBe("Explain LMTD Method for Heat Exchanger");
   });
 
   it("marking practised gives +10 XP and unmarking removes it", () => {
