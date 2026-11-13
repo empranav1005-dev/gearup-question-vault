@@ -18,17 +18,23 @@ const VALID = new Set(QUESTIONS.map((q) => q.id));
 /** Progress is saved only in this browser (localStorage); there is no account or server. */
 export function useVault() {
   const [state, setState] = useState<VaultState>(initialVaultState);
+  const ref = useRef(state);
   const loaded = useRef(false);
+
+  const commit = useCallback((next: VaultState) => {
+    ref.current = next;
+    setState(next);
+  }, []);
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) setState(sanitizeState(JSON.parse(raw), VALID));
+      if (raw) commit(sanitizeState(JSON.parse(raw), VALID));
     } catch {
       /* ignore corrupt storage */
     }
     loaded.current = true;
-  }, []);
+  }, [commit]);
 
   useEffect(() => {
     if (!loaded.current) return;
@@ -39,34 +45,46 @@ export function useVault() {
     }
   }, [state]);
 
-  const toggle = useCallback((id: number) => {
-    setState((s) => {
-      const next = togglePractised(s, id);
-      if (next.practised.length > s.practised.length) toast.success("Practised! +10 XP");
-      return next;
-    });
-  }, []);
+  /** Returns true when the question became practised (false when unmarked). */
+  const toggle = useCallback(
+    (id: number) => {
+      const prev = ref.current;
+      const next = togglePractised(prev, id);
+      commit(next);
+      return next.practised.length > prev.practised.length;
+    },
+    [commit],
+  );
 
-  const pin = useCallback((id: number) => {
-    setState((s) => {
-      const r = pinFn(s, id);
+  const pin = useCallback(
+    (id: number) => {
+      const r = pinFn(ref.current, id);
       if (r.error === "full") toast.error("Queue is full - max 5");
       else if (r.error === "practised") toast.error("Already practised - can't pin");
-      return r.state;
-    });
-  }, []);
+      commit(r.state);
+      return r.error === null;
+    },
+    [commit],
+  );
 
-  const unpin = useCallback((id: number) => setState((s) => unpinFn(s, id)), []);
-  const practiseAndClear = useCallback((id: number) => {
-    setState((s) => markPractised(s, [id]));
-    toast.success("Practised & cleared! +10 XP");
-  }, []);
+  const unpin = useCallback((id: number) => commit(unpinFn(ref.current, id)), [commit]);
+
+  /** Returns true when this emptied the Revise Next queue. */
+  const practiseAndClear = useCallback(
+    (id: number) => {
+      const next = markPractised(ref.current, [id]);
+      commit(next);
+      return next.pinned.length === 0;
+    },
+    [commit],
+  );
+
+  /** Returns how many pinned questions were practised and cleared. */
   const clearAll = useCallback(() => {
-    setState((s) => {
-      if (s.pinned.length) toast.success(`Cleared queue! +${s.pinned.length * 10} XP`);
-      return clearAllAfterPractice(s);
-    });
-  }, []);
+    const count = ref.current.pinned.length;
+    commit(clearAllAfterPractice(ref.current));
+    return count;
+  }, [commit]);
 
   return { state, toggle, pin, unpin, practiseAndClear, clearAll };
 }
