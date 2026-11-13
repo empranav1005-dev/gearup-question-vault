@@ -10,7 +10,7 @@ interface Props {
 export function Header({ practised, total, xp, streak }: Props) {
   const pct = Math.round((practised / total) * 100);
   return (
-    <header className="glass sticky top-0 z-30 rounded-none border-x-0 border-t-0 sm:rounded-b-2xl">
+    <header className="glass relative z-30 rounded-none border-x-0 border-t-0 sm:rounded-b-2xl">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-2.5">
           <span className="levitate grid h-10 w-10 place-items-center rounded-xl bg-primary/15 text-xl glow-primary">
